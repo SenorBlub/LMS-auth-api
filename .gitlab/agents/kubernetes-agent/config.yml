@@ -1,0 +1,4 @@
+gitops:
+  manifest_projects:
+  - id: "LMS/AuthAPI"
+    default_namespace: "default"
