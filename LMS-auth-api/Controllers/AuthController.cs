@@ -20,7 +20,7 @@ namespace LMS_auth_api.Controllers
 			_authService = authservice;
 		}
 
-		[HttpPost("login")]
+		[HttpPost("authorize")]
 		public async Task<IActionResult> Login([FromBody] AuthRequest request)
 		{
 			if (!_authService.Authorize(request).Result)

@@ -2,6 +2,7 @@
 using Logic.Models;
 using System.Configuration;
 using System.Net.Http.Json;
+using DotNetEnv;
 using Microsoft.Extensions.Configuration;
 
 namespace Logic.Services;
@@ -17,7 +18,7 @@ public class AuthService : IAuthService
 	}
 	public async Task<bool> Authorize(AuthRequest request)
 	{
-		string uri = _configuration.GetSection("GatewayEndpoints")["DefaultEndpoint"];
+		string uri = Env.GetString("USER_IP") + ":" + Env.GetString("USER_PORT"); //!TODO Should be gateway (or MQ when implemented)
 		uri += "/user/login";
 		HttpClient client = new HttpClient();
 		try
