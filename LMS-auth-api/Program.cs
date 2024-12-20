@@ -45,7 +45,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
-builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("JwtConfig"));
+builder.Services.Configure<JwtConfig>();
 
 var app = builder.Build();
 
