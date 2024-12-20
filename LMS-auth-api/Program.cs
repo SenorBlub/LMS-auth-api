@@ -1,3 +1,4 @@
+using System.Text;
 using DAL.Contexts;
 using DAL.Repositories;
 using Logic.Configuration;
@@ -6,6 +7,9 @@ using Logic.IServices;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql;
 using DotNetEnv;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,7 +49,19 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
-builder.Services.Configure<JwtConfig>();
+
+var jwtConfig = builder.Configuration.GetSection("JwtConfig");
+var secretKey = Encoding.UTF8.GetBytes(Env.GetString("JWT_SECRET_KEY"));
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+	.AddJwtBearer(options => {
+		options.TokenValidationParameters = new TokenValidationParameters
+		{
+			ValidateIssuerSigningKey = true,
+			IssuerSigningKey = new SymmetricSecurityKey(secretKey),
+			ValidateIssuer = false,
+			ValidateAudience = true
+		};
+	});
 
 var app = builder.Build();
 
