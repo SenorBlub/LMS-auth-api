@@ -22,6 +22,7 @@ builder.Services.AddCors(options =>
 	options.AddDefaultPolicy(corsPolicyBuilder =>
 	{
 		corsPolicyBuilder.WithOrigins(Env.GetString("FRONT_END_URL"))
+			.AllowAnyOrigin()
 			.AllowAnyHeader()
 			.AllowAnyMethod()
 			.AllowCredentials()
