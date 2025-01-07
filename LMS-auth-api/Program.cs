@@ -7,6 +7,7 @@ using Logic.IServices;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql;
 using DotNetEnv;
+using Logic.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -49,6 +50,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var secretKey = Encoding.UTF8.GetBytes(Env.GetString("JWT_SECRET_KEY"));
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
