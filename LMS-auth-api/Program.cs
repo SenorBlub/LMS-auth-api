@@ -51,6 +51,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<HttpClient, HttpClient>();
 
 var secretKey = Encoding.UTF8.GetBytes(Env.GetString("JWT_SECRET_KEY"));
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
