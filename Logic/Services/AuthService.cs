@@ -18,7 +18,7 @@ public class AuthService : IAuthService
 	}
 	public async Task<bool> Authorize(AuthRequest request)
 	{
-		string uri = Env.GetString("USER_IP") + ":" + Env.GetString("USER_PORT"); //!TODO Should be gateway (or MQ when implemented)
+		string uri = Env.GetString("GATEWAY_IP") + ":" + Env.GetString("GATEWAY_PORT"); //!TODO Should be MQ when implemented
 		uri += "/user/login";
 		HttpClient client = new HttpClient();
 		try
