@@ -50,8 +50,6 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
-
-var jwtConfig = builder.Configuration.GetSection("JwtConfig");
 var secretKey = Encoding.UTF8.GetBytes(Env.GetString("JWT_SECRET_KEY"));
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 	.AddJwtBearer(options => {
