@@ -36,7 +36,7 @@ var connectionString =
 
 builder.Services.AddDbContext<AuthDbContext>(options =>
 	options.UseMySql(
-		builder.Configuration.GetConnectionString(connectionString),
+		connectionString,
 		new MySqlServerVersion(new Version(Env.GetInt("SQL_MAJOR"), Env.GetInt("SQL_MINOR"), Env.GetInt("SQL_BUILD")))
 	)
 );
