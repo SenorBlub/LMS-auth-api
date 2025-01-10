@@ -16,7 +16,7 @@ public class TokenService : ITokenService
 		_jwtConfig = jwtConfigOptions.Value ?? throw new ArgumentNullException(nameof(jwtConfigOptions));
 	}
 
-	public string GenerateToken(Guid userId, string username)
+	public string GenerateToken(Guid userId)
 	{
 		var tokenHandler = new JwtSecurityTokenHandler();
 		var key = Encoding.UTF8.GetBytes(_jwtConfig.Secret);
@@ -25,7 +25,6 @@ public class TokenService : ITokenService
 		{
 			Sub = userId.ToString(),
 			Jti = Guid.NewGuid().ToString(),
-			Name = username,
 		};
 		claims.SetTimestamps(60); // Token valid for 60 minutes
 
@@ -35,8 +34,7 @@ public class TokenService : ITokenService
 			{
 				new Claim(JwtRegisteredClaimNames.Sub, claims.Sub),
 				new Claim(JwtRegisteredClaimNames.Jti, claims.Jti),
-				new Claim(JwtRegisteredClaimNames.Iat, claims.Iat.ToString(), ClaimValueTypes.Integer64),
-				new Claim("name", claims.Name)
+				new Claim(JwtRegisteredClaimNames.Iat, claims.Iat.ToString(), ClaimValueTypes.Integer64)
 			}),
 			Expires = DateTimeOffset.FromUnixTimeSeconds(claims.Exp).UtcDateTime,
 			Issuer = _jwtConfig.Issuer,
@@ -48,7 +46,7 @@ public class TokenService : ITokenService
 		return tokenHandler.WriteToken(token);
 	}
 
-	public string GenerateRefreshToken(Guid userId, string username)
+	public string GenerateRefreshToken(Guid userId)
 	{
 		var tokenHandler = new JwtSecurityTokenHandler();
 		var key = Encoding.UTF8.GetBytes(_jwtConfig.Secret);
@@ -56,8 +54,7 @@ public class TokenService : ITokenService
 		var claims = new JwtClaims
 		{
 			Sub = userId.ToString(),
-			Jti = Guid.NewGuid().ToString(),
-			Name = username,
+			Jti = Guid.NewGuid().ToString()
 		};
 		claims.SetTimestamps(1440); // Token valid for 1 day
 
@@ -67,8 +64,7 @@ public class TokenService : ITokenService
 			{
 				new Claim(JwtRegisteredClaimNames.Sub, claims.Sub),
 				new Claim(JwtRegisteredClaimNames.Jti, claims.Jti),
-				new Claim(JwtRegisteredClaimNames.Iat, claims.Iat.ToString(), ClaimValueTypes.Integer64),
-				new Claim("name", claims.Name)
+				new Claim(JwtRegisteredClaimNames.Iat, claims.Iat.ToString(), ClaimValueTypes.Integer64)
 			}),
 			Expires = DateTimeOffset.FromUnixTimeSeconds(claims.Exp).UtcDateTime,
 			Issuer = _jwtConfig.Issuer,
