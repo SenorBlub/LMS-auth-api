@@ -53,15 +53,28 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<HttpClient, HttpClient>();
 
-var secretKey = Encoding.UTF8.GetBytes(Env.GetString("JWT_SECRET_KEY"));
+var jwtConfig = new JwtConfig
+{
+	Secret = Env.GetString("JWT_SECRET_KEY"),
+	Issuer = Env.GetString("JWT_ISSUER"),
+	Audience = Env.GetString("JWT_AUDIENCE")
+};
+builder.Services.AddSingleton(jwtConfig);
+
+var secretKey = Encoding.UTF8.GetBytes(jwtConfig.Secret);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-	.AddJwtBearer(options => {
+	.AddJwtBearer(options =>
+	{
 		options.TokenValidationParameters = new TokenValidationParameters
 		{
 			ValidateIssuerSigningKey = true,
 			IssuerSigningKey = new SymmetricSecurityKey(secretKey),
-			ValidateIssuer = false,
-			ValidateAudience = true
+			ValidateIssuer = true,
+			ValidIssuer = jwtConfig.Issuer,
+			ValidateAudience = true,
+			ValidAudience = jwtConfig.Audience,
+			ValidateLifetime = true,
+			ClockSkew = TimeSpan.Zero
 		};
 	});
 
