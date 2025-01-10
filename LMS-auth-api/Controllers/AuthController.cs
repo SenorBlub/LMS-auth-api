@@ -65,7 +65,10 @@ namespace LMS_auth_api.Controllers
 		[HttpPost("register")]
 		public async Task<IActionResult> Register([FromBody] RegisterRequest request)
 		{
-			if(!await _authService)
+			if (!await _authService.Register(request))
+			{
+				return BadRequest("Registry failed, credentials incorrect");
+			}
 
 			var token = _tokenService.GenerateToken(request.Id);
 			var refreshToken = _tokenService.GenerateRefreshToken(request.Id);
