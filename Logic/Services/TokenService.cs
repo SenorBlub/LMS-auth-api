@@ -11,9 +11,9 @@ public class TokenService : ITokenService
 {
 	private readonly JwtConfig _jwtConfig;
 
-	public TokenService(IOptions<JwtConfig> jwtConfigOptions)
+	public TokenService(JwtConfig jwtConfig)
 	{
-		_jwtConfig = jwtConfigOptions.Value ?? throw new ArgumentNullException(nameof(jwtConfigOptions));
+		_jwtConfig = jwtConfig;
 	}
 
 	public string GenerateToken(Guid userId)
