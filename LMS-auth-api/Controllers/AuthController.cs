@@ -61,5 +61,23 @@ namespace LMS_auth_api.Controllers
 
 			return Ok(new AuthResponse { Token = newAccessToken, RefreshToken = refreshToken.Token });
 		}
+
+		[HttpPost("register")]
+		public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+		{
+			if(!await _authService)
+
+			var token = _tokenService.GenerateToken(request.Id);
+			var refreshToken = _tokenService.GenerateRefreshToken(request.Id);
+
+			await _refreshTokenRepository.SaveRefreshTokenAsync(new RefreshToken
+			{
+				Token = refreshToken,
+				UserId = request.Id,
+				ExpiresAt = DateTime.UtcNow.AddDays(1)
+			});
+
+			return Ok(new AuthResponse { Token = token, RefreshToken = refreshToken });
+		}
 	}
 }

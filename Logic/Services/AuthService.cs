@@ -34,4 +34,23 @@ public class AuthService : IAuthService
 			return false;
 		}
 	}
+
+	public async Task<bool> Register(RegisterRequest request)
+	{
+		string uri = Env.GetString("GATEWAY_IP") + ":" + Env.GetString("GATEWAY_PORT"); //!TODO Should be MQ when implemented
+		uri += "/user";
+		HttpClient client = new HttpClient();
+		try
+		{
+			var response = client.PostAsJsonAsync(uri, request).Result;
+
+			return response.IsSuccessStatusCode;
+		}
+		catch (HttpRequestException e)
+		{
+			Console.WriteLine($"An error occurred while trying to send register request: {e.Message}.");
+
+			return false;
+		}
+	}
 }
