@@ -16,22 +16,29 @@ public class TokenService : ITokenService
 		_jwtConfig = jwtConfigOptions.Value ?? throw new ArgumentNullException(nameof(jwtConfigOptions));
 	}
 
-	public string GenerateToken(Guid userId)
+	public string GenerateToken(Guid userId, string username)
 	{
 		var tokenHandler = new JwtSecurityTokenHandler();
 		var key = Encoding.UTF8.GetBytes(_jwtConfig.Secret);
 
-		var claims = new[]
+		var claims = new JwtClaims
 		{
-			new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
-			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-			new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
+			Sub = userId.ToString(),
+			Jti = Guid.NewGuid().ToString(),
+			Name = username,
 		};
+		claims.SetTimestamps(60); // Token valid for 60 minutes
 
 		var tokenDescriptor = new SecurityTokenDescriptor
 		{
-			Subject = new ClaimsIdentity(claims),
-			Expires = DateTime.UtcNow.AddHours(1),
+			Subject = new ClaimsIdentity(new[]
+			{
+				new Claim(JwtRegisteredClaimNames.Sub, claims.Sub),
+				new Claim(JwtRegisteredClaimNames.Jti, claims.Jti),
+				new Claim(JwtRegisteredClaimNames.Iat, claims.Iat.ToString(), ClaimValueTypes.Integer64),
+				new Claim("name", claims.Name)
+			}),
+			Expires = DateTimeOffset.FromUnixTimeSeconds(claims.Exp).UtcDateTime,
 			Issuer = _jwtConfig.Issuer,
 			Audience = _jwtConfig.Audience,
 			SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
@@ -41,22 +48,29 @@ public class TokenService : ITokenService
 		return tokenHandler.WriteToken(token);
 	}
 
-	public string GenerateRefreshToken(Guid userId)
+	public string GenerateRefreshToken(Guid userId, string username)
 	{
 		var tokenHandler = new JwtSecurityTokenHandler();
 		var key = Encoding.UTF8.GetBytes(_jwtConfig.Secret);
 
-		var claims = new[]
+		var claims = new JwtClaims
 		{
-			new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
-			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-			new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
+			Sub = userId.ToString(),
+			Jti = Guid.NewGuid().ToString(),
+			Name = username,
 		};
+		claims.SetTimestamps(1440); // Token valid for 1 day
 
 		var tokenDescriptor = new SecurityTokenDescriptor
 		{
-			Subject = new ClaimsIdentity(claims),
-			Expires = DateTime.UtcNow.AddDays(1),
+			Subject = new ClaimsIdentity(new[]
+			{
+				new Claim(JwtRegisteredClaimNames.Sub, claims.Sub),
+				new Claim(JwtRegisteredClaimNames.Jti, claims.Jti),
+				new Claim(JwtRegisteredClaimNames.Iat, claims.Iat.ToString(), ClaimValueTypes.Integer64),
+				new Claim("name", claims.Name)
+			}),
+			Expires = DateTimeOffset.FromUnixTimeSeconds(claims.Exp).UtcDateTime,
 			Issuer = _jwtConfig.Issuer,
 			Audience = _jwtConfig.Audience,
 			SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
