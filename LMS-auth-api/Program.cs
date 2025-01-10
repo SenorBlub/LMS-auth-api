@@ -32,7 +32,7 @@ builder.Services.AddCors(options =>
 });
 
 var connectionString =
-	$"Server={Env.GetString("DB_HOST")};Database={Env.GetString("DB_NAME")};User Id={Env.GetString("DB_USER")};Password={Env.GetString("DB_PASSWORD")};";
+	$"Server={Env.GetString("DB_HOST")};Port={Env.GetString("DB_PORT")};Database={Env.GetString("DB_NAME")};User={Env.GetString("DB_USER")};Password={Env.GetString("DB_PASSWORD")};";
 
 builder.Services.AddDbContext<AuthDbContext>(options =>
 	options.UseMySql(
