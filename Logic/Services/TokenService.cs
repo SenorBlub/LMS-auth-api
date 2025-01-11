@@ -1,11 +1,11 @@
-﻿using System;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Logic.Configuration;
 using Logic.IServices;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+
+namespace Logic.Services;
 
 public class TokenService : ITokenService
 {
@@ -28,8 +28,7 @@ public class TokenService : ITokenService
 			new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
 			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
 			new Claim(JwtRegisteredClaimNames.Iat, now.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
-			new Claim(JwtRegisteredClaimNames.Exp, now.AddMinutes(60).ToUnixTimeSeconds().ToString(),
-				ClaimValueTypes.Integer64),
+			new Claim(JwtRegisteredClaimNames.Exp, now.AddMinutes(60).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
 			new Claim(JwtRegisteredClaimNames.Nbf, now.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
 			new Claim(JwtRegisteredClaimNames.Iss, _jwtConfig.Issuer),
 			new Claim(JwtRegisteredClaimNames.Aud, _jwtConfig.Audience)
@@ -60,7 +59,7 @@ public class TokenService : ITokenService
 			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
 			new Claim(JwtRegisteredClaimNames.Iat, now.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
 			new Claim(JwtRegisteredClaimNames.Exp, now.AddDays(1).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
-			new Claim(JwtRegisteredClaimNames.Nbf, now.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64), // Add nbf claim
+			new Claim(JwtRegisteredClaimNames.Nbf, now.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
 			new Claim(JwtRegisteredClaimNames.Iss, _jwtConfig.Issuer),
 			new Claim(JwtRegisteredClaimNames.Aud, _jwtConfig.Audience)
 		};
@@ -69,14 +68,13 @@ public class TokenService : ITokenService
 		{
 			Subject = new ClaimsIdentity(claims),
 			Expires = now.AddDays(1).UtcDateTime,
-			NotBefore = now.UtcDateTime, // Include NotBefore in the descriptor
+			NotBefore = now.UtcDateTime,
 			SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
 		};
 
 		var token = tokenHandler.CreateToken(tokenDescriptor);
 		return tokenHandler.WriteToken(token);
 	}
-
 
 	public bool ValidateToken(string token)
 	{
