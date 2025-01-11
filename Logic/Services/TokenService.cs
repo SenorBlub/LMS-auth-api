@@ -21,24 +21,25 @@ public class TokenService : ITokenService
 		var tokenHandler = new JwtSecurityTokenHandler();
 		var key = Encoding.UTF8.GetBytes(_jwtConfig.Secret);
 
-		var claims = new JwtClaims
+		var now = DateTimeOffset.UtcNow;
+
+		var claims = new[]
 		{
-			Sub = userId.ToString(),
-			Jti = Guid.NewGuid().ToString(),
+			new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
+			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+			new Claim(JwtRegisteredClaimNames.Iat, now.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
+			new Claim(JwtRegisteredClaimNames.Exp, now.AddMinutes(60).ToUnixTimeSeconds().ToString(),
+				ClaimValueTypes.Integer64),
+			new Claim(JwtRegisteredClaimNames.Nbf, now.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
+			new Claim(JwtRegisteredClaimNames.Iss, _jwtConfig.Issuer),
+			new Claim(JwtRegisteredClaimNames.Aud, _jwtConfig.Audience)
 		};
-		claims.SetTimestamps(60); // Token valid for 60 minutes
 
 		var tokenDescriptor = new SecurityTokenDescriptor
 		{
-			Subject = new ClaimsIdentity(new[]
-			{
-				new Claim(JwtRegisteredClaimNames.Sub, claims.Sub),
-				new Claim(JwtRegisteredClaimNames.Jti, claims.Jti),
-				new Claim(JwtRegisteredClaimNames.Iat, claims.Iat.ToString(), ClaimValueTypes.Integer64)
-			}),
-			Expires = DateTimeOffset.FromUnixTimeSeconds(claims.Exp).UtcDateTime,
-			Issuer = _jwtConfig.Issuer,
-			Audience = _jwtConfig.Audience,
+			Subject = new ClaimsIdentity(claims),
+			Expires = now.AddMinutes(60).UtcDateTime,
+			NotBefore = now.UtcDateTime,
 			SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
 		};
 
@@ -51,30 +52,31 @@ public class TokenService : ITokenService
 		var tokenHandler = new JwtSecurityTokenHandler();
 		var key = Encoding.UTF8.GetBytes(_jwtConfig.Secret);
 
-		var claims = new JwtClaims
+		var now = DateTimeOffset.UtcNow;
+
+		var claims = new[]
 		{
-			Sub = userId.ToString(),
-			Jti = Guid.NewGuid().ToString()
+			new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
+			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+			new Claim(JwtRegisteredClaimNames.Iat, now.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
+			new Claim(JwtRegisteredClaimNames.Exp, now.AddDays(1).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
+			new Claim(JwtRegisteredClaimNames.Nbf, now.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64), // Add nbf claim
+			new Claim(JwtRegisteredClaimNames.Iss, _jwtConfig.Issuer),
+			new Claim(JwtRegisteredClaimNames.Aud, _jwtConfig.Audience)
 		};
-		claims.SetTimestamps(1440); // Token valid for 1 day
 
 		var tokenDescriptor = new SecurityTokenDescriptor
 		{
-			Subject = new ClaimsIdentity(new[]
-			{
-				new Claim(JwtRegisteredClaimNames.Sub, claims.Sub),
-				new Claim(JwtRegisteredClaimNames.Jti, claims.Jti),
-				new Claim(JwtRegisteredClaimNames.Iat, claims.Iat.ToString(), ClaimValueTypes.Integer64)
-			}),
-			Expires = DateTimeOffset.FromUnixTimeSeconds(claims.Exp).UtcDateTime,
-			Issuer = _jwtConfig.Issuer,
-			Audience = _jwtConfig.Audience,
+			Subject = new ClaimsIdentity(claims),
+			Expires = now.AddDays(1).UtcDateTime,
+			NotBefore = now.UtcDateTime, // Include NotBefore in the descriptor
 			SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
 		};
 
 		var token = tokenHandler.CreateToken(tokenDescriptor);
 		return tokenHandler.WriteToken(token);
 	}
+
 
 	public bool ValidateToken(string token)
 	{
@@ -83,7 +85,7 @@ public class TokenService : ITokenService
 
 		try
 		{
-			tokenHandler.ValidateToken(token, new TokenValidationParameters
+			var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
 			{
 				ValidateIssuerSigningKey = true,
 				IssuerSigningKey = new SymmetricSecurityKey(key),
@@ -93,13 +95,43 @@ public class TokenService : ITokenService
 				ValidAudience = _jwtConfig.Audience,
 				ValidateLifetime = true,
 				ClockSkew = TimeSpan.Zero
-			}, out _);
+			}, out SecurityToken validatedToken);
 
-			return true;
+			if (validatedToken is JwtSecurityToken jwtToken)
+			{
+				if (!jwtToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+				{
+					throw new SecurityTokenException("Invalid token algorithm.");
+				}
+
+				var claims = jwtToken.Claims;
+				var sub = claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value;
+				var jti = claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
+				var iat = claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Iat)?.Value;
+				var nbf = claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Nbf)?.Value;
+
+				if (string.IsNullOrEmpty(sub) || string.IsNullOrEmpty(jti) || string.IsNullOrEmpty(iat) || string.IsNullOrEmpty(nbf))
+				{
+					throw new SecurityTokenException("Missing required claims.");
+				}
+
+				if (DateTime.TryParse(nbf, out var notBeforeTime) && DateTime.UtcNow < notBeforeTime)
+				{
+					throw new SecurityTokenException("Token is not yet valid.");
+				}
+			}
+			else
+			{
+				throw new SecurityTokenException("Invalid token format.");
+			}
+
+			return true; 
 		}
-		catch
+		catch (Exception ex)
 		{
-			return false;
+			Console.WriteLine($"Token validation failed: {ex.Message}");
+			return false; 
 		}
 	}
+
 }
