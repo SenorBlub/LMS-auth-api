@@ -16,7 +16,6 @@ public class AuthDbContext : DbContext
 	{
 		base.OnModelCreating(modelBuilder);
 
-		// Map RefreshToken entity to refresh_tokens table
 		modelBuilder.Entity<RefreshToken>(entity =>
 		{
 			entity.ToTable("refresh_tokens");
@@ -24,7 +23,7 @@ public class AuthDbContext : DbContext
 
 			entity.Property(e => e.Id)
 				.HasColumnName("id")
-				.HasColumnType("char(36)")  // MySQL GUID type
+				.HasColumnType("char(36)")
 				.IsRequired();
 
 			entity.Property(e => e.Token)

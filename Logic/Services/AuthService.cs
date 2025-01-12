@@ -43,8 +43,12 @@ public class AuthService : IAuthService
 		try
 		{
 			var response = client.PostAsJsonAsync(uri, request).Result;
+			if (response.IsSuccessStatusCode)
+			{
+				return true;
+			}
 
-			return true;
+			return false;
 		}
 		catch (HttpRequestException e)
 		{

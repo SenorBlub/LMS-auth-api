@@ -27,9 +27,6 @@ public class TokenService : ITokenService
 		{
 			new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
 			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-			new Claim(JwtRegisteredClaimNames.Iat, now.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
-			new Claim(JwtRegisteredClaimNames.Exp, now.AddMinutes(60).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
-			new Claim(JwtRegisteredClaimNames.Nbf, now.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
 			new Claim(JwtRegisteredClaimNames.Iss, _jwtConfig.Issuer),
 			new Claim(JwtRegisteredClaimNames.Aud, _jwtConfig.Audience)
 		};
@@ -37,6 +34,7 @@ public class TokenService : ITokenService
 		var tokenDescriptor = new SecurityTokenDescriptor
 		{
 			Subject = new ClaimsIdentity(claims),
+			IssuedAt = now.UtcDateTime,
 			Expires = now.AddMinutes(60).UtcDateTime,
 			NotBefore = now.UtcDateTime,
 			SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
@@ -57,9 +55,6 @@ public class TokenService : ITokenService
 		{
 			new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
 			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-			new Claim(JwtRegisteredClaimNames.Iat, now.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
-			new Claim(JwtRegisteredClaimNames.Exp, now.AddDays(1).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
-			new Claim(JwtRegisteredClaimNames.Nbf, now.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
 			new Claim(JwtRegisteredClaimNames.Iss, _jwtConfig.Issuer),
 			new Claim(JwtRegisteredClaimNames.Aud, _jwtConfig.Audience)
 		};
@@ -67,6 +62,7 @@ public class TokenService : ITokenService
 		var tokenDescriptor = new SecurityTokenDescriptor
 		{
 			Subject = new ClaimsIdentity(claims),
+			IssuedAt = now.UtcDateTime,
 			Expires = now.AddDays(1).UtcDateTime,
 			NotBefore = now.UtcDateTime,
 			SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
