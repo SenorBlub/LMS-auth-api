@@ -35,6 +35,25 @@ public class AuthService : IAuthService
 		}
 	}
 
+	public async Task<(bool, Guid)> Authorize(EmailAuthRequest request)
+	{
+		string uri = Env.GetString("GATEWAY_IP") + ":" + Env.GetString("GATEWAY_PORT"); //!TODO Should be MQ when implemented
+		uri += "/user/email-login";
+		HttpClient client = new HttpClient();
+		try
+		{
+			var response = client.PostAsJsonAsync(uri, request).Result;
+
+			return (true, Guid.Parse(response.ReasonPhrase));
+		}
+		catch (HttpRequestException e)
+		{
+			Console.WriteLine($"An error occurred while trying to send login request: {e.Message}.");
+
+			return (false, Guid.Empty);
+		}
+	}
+
 	public async Task<bool> Register(RegisterRequest request)
 	{
 		string uri = Env.GetString("GATEWAY_IP") + ":" + Env.GetString("GATEWAY_PORT"); //!TODO Should be MQ when implemented

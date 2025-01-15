@@ -41,6 +41,28 @@ namespace LMS_auth_api.Controllers
 			return Ok(new AuthResponse { Token = token, RefreshToken = refreshToken });
 		}
 
+		[HttpPost("email-authorize")]
+		public async Task<IActionResult> EmailLogin([FromBody] EmailAuthRequest request)
+		{
+			var response = await _authService.Authorize(request);
+			if (!response.Item1)
+			{
+				return BadRequest("Login failed, incorrect credentials.");
+			}
+
+			var token = _tokenService.GenerateToken(response.Item2);
+			var refreshToken = _tokenService.GenerateRefreshToken(response.Item2);
+
+			await _refreshTokenRepository.SaveRefreshTokenAsync(new RefreshToken
+			{
+				Token = refreshToken,
+				UserId = response.Item2,
+				ExpiresAt = DateTime.UtcNow.AddDays(1)
+			});
+
+			return Ok(new AuthResponse { Token = token, RefreshToken = refreshToken });
+		}
+
 		[HttpPost("refresh-token")]
 		public async Task<IActionResult> RefreshToken([FromBody] TokenRefreshRequest request)
 		{
