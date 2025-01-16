@@ -35,7 +35,7 @@ public class AuthService : IAuthService
 		HttpClient client = new HttpClient();
 		try
 		{
-			var payload = WrapWithKey(request);
+			var payload = request;
 			var response = await client.PostAsJsonAsync(uri, payload);
 
 			return response.IsSuccessStatusCode;
@@ -53,7 +53,7 @@ public class AuthService : IAuthService
 		HttpClient client = new HttpClient();
 		try
 		{
-			var payload = WrapWithKey(request);
+			var payload = request;
 			var response = await client.PostAsJsonAsync(uri, payload);
 
 			if (response.IsSuccessStatusCode)
@@ -75,10 +75,10 @@ public class AuthService : IAuthService
 	{
 		string uri = BuildGatewayUri("/user/User");
 		HttpClient client = new HttpClient();
-		User requestUser = new User(){ Email = request.Email, Id = Guid.Empty, Password = request.Password, Username = request.Username};
+		User requestUser = new User{ Email = request.Email, Id = Guid.Empty, Password = request.Password, Username = request.Username};
 		try
 		{
-			var payload = WrapWithKey(requestUser); 
+			var payload = requestUser;
 			var response = await client.PostAsJsonAsync(uri, payload);
 
 			return response.IsSuccessStatusCode;
