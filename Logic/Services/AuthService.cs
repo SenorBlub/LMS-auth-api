@@ -47,29 +47,35 @@ public class AuthService : IAuthService
 		}
 	}
 
-	public async Task<(bool, Guid)> Authorize(EmailAuthRequest request)
+	public async Task<(bool, Guid)> EmailAuthorize(EmailAuthRequest request)
 	{
 		string uri = BuildGatewayUri("/user/User/email-login");
-		HttpClient client = new HttpClient();
+
 		try
 		{
-			var payload = request;
-			var response = await client.PostAsJsonAsync(uri, payload);
+			// Send the request using the injected HttpClient
+			var response = await _httpClient.PostAsJsonAsync(uri, request);
 
 			if (response.IsSuccessStatusCode)
 			{
-				Guid userId = Guid.Parse(response.ReasonPhrase);
-				return (true, userId);
+				// Deserialize the response content to extract the userId
+				var responseContent = await response.Content.ReadFromJsonAsync<AuthResponse>();
+				if (responseContent != null && responseContent.UserId != Guid.Empty)
+				{
+					return (true, responseContent.UserId);
+				}
 			}
 
+			Console.WriteLine($"Email authorization failed with status code: {response.StatusCode}");
 			return (false, Guid.Empty);
 		}
 		catch (HttpRequestException e)
 		{
-			Console.WriteLine($"An error occurred while trying to send login request: {e.Message}.");
+			Console.WriteLine($"An error occurred while trying to send the email login request: {e.Message}\n{e.StackTrace}");
 			return (false, Guid.Empty);
 		}
 	}
+
 
 	public async Task<(bool, Guid)> Register(RegisterRequest request)
 	{

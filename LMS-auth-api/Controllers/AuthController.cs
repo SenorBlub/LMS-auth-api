@@ -45,7 +45,7 @@ namespace LMS_auth_api.Controllers
 		[HttpPost("email-authorize")]
 		public async Task<IActionResult> EmailLogin([FromBody] EmailAuthRequest request)
 		{
-			var response = await _authService.Authorize(request);
+			var response = await _authService.EmailAuthorize(request);
 			Console.WriteLine(response);
 			if (!response.Item1)
 			{
