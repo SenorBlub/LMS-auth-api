@@ -31,7 +31,7 @@ public class AuthService : IAuthService
 
 	public async Task<bool> Authorize(AuthRequest request)
 	{
-		string uri = BuildGatewayUri("/user/User/login");
+		string uri = BuildGatewayUri("/User/user/login");
 		HttpClient client = new HttpClient();
 		try
 		{
@@ -49,7 +49,7 @@ public class AuthService : IAuthService
 
 	public async Task<(bool, Guid)> Authorize(EmailAuthRequest request)
 	{
-		string uri = BuildGatewayUri("/user/User/email-login");
+		string uri = BuildGatewayUri("/User/user/email-login");
 		HttpClient client = new HttpClient();
 		try
 		{
@@ -73,7 +73,7 @@ public class AuthService : IAuthService
 
 	public async Task<bool> Register(RegisterRequest request)
 	{
-		string uri = BuildGatewayUri("/user/User");
+		string uri = BuildGatewayUri("/User/user");
 		HttpClient client = new HttpClient();
 		try
 		{
