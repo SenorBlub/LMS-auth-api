@@ -23,7 +23,8 @@ namespace LMS_auth_api.Controllers
 		[HttpPost("authorize")]
 		public async Task<IActionResult> Login([FromBody] AuthRequest request)
 		{
-			if (!await _authService.Authorize(request))
+			var result = await _authService.Authorize(request);
+			if (!result)
 			{
 				return BadRequest("Login failed, incorrect credentials.");
 			}
