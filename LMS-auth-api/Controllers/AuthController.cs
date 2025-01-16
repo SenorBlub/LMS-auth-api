@@ -91,7 +91,7 @@ namespace LMS_auth_api.Controllers
 		{
 			var response = await _authService.Register(request);
 			Console.WriteLine(response);
-			if (!response)
+			if (!response.Item1)
 			{
 				return BadRequest("Registration failed, credentials incorrect");
 			}
@@ -106,7 +106,7 @@ namespace LMS_auth_api.Controllers
 				ExpiresAt = DateTime.UtcNow.AddDays(1)
 			});
 
-			return Ok(new AuthResponse { UserId = request.UserId, Token = token, RefreshToken = refreshToken });
+			return Ok(new AuthResponse { UserId = response.Item2, Token = token, RefreshToken = refreshToken });
 		}
 	}
 }
