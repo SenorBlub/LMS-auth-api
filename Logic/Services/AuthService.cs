@@ -31,7 +31,7 @@ public class AuthService : IAuthService
 
 	public async Task<bool> Authorize(AuthRequest request)
 	{
-		string uri = BuildGatewayUri("/User/user/login");
+		string uri = BuildGatewayUri("/user/User/login");
 		HttpClient client = new HttpClient();
 		try
 		{
@@ -49,7 +49,7 @@ public class AuthService : IAuthService
 
 	public async Task<(bool, Guid)> Authorize(EmailAuthRequest request)
 	{
-		string uri = BuildGatewayUri("/User/user/email-login");
+		string uri = BuildGatewayUri("/user/User/email-login");
 		HttpClient client = new HttpClient();
 		try
 		{
@@ -73,11 +73,12 @@ public class AuthService : IAuthService
 
 	public async Task<bool> Register(RegisterRequest request)
 	{
-		string uri = BuildGatewayUri("/User/user");
+		string uri = BuildGatewayUri("/user/User");
 		HttpClient client = new HttpClient();
+		User requestUser = new User(){ Email = request.Email, Id = Guid.Empty, Password = request.Password, Username = request.Username};
 		try
 		{
-			var payload = WrapWithKey(request); 
+			var payload = WrapWithKey(requestUser); 
 			var response = await client.PostAsJsonAsync(uri, payload);
 
 			return response.IsSuccessStatusCode;
