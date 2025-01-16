@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Net.Http.Json;
 using DotNetEnv;
 using Microsoft.Extensions.Configuration;
+using System.Text.Json;
 
 namespace Logic.Services;
 
@@ -49,32 +50,44 @@ public class AuthService : IAuthService
 
 	public async Task<(bool, Guid)> EmailAuthorize(EmailAuthRequest request)
 	{
+		if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
+		{
+			Console.WriteLine("Email or Password is empty.");
+			return (false, Guid.Empty);
+		}
+
 		string uri = BuildGatewayUri("/user/User/email-login");
 
 		try
 		{
-			// Send the request using the injected HttpClient
+			Console.WriteLine($"Sending request to: {uri}");
+			Console.WriteLine($"Request Payload: {JsonSerializer.Serialize(request)}");
+
 			var response = await _httpClient.PostAsJsonAsync(uri, request);
 
 			if (response.IsSuccessStatusCode)
 			{
-				// Deserialize the response content to extract the userId
 				var responseContent = await response.Content.ReadFromJsonAsync<AuthResponse>();
 				if (responseContent != null && responseContent.UserId != Guid.Empty)
 				{
 					return (true, responseContent.UserId);
 				}
 			}
+			else
+			{
+				var errorContent = await response.Content.ReadAsStringAsync();
+				Console.WriteLine($"Server returned error. Status: {response.StatusCode}, Error: {errorContent}");
+			}
 
-			Console.WriteLine($"Email authorization failed with status code: {response.StatusCode}");
 			return (false, Guid.Empty);
 		}
 		catch (HttpRequestException e)
 		{
-			Console.WriteLine($"An error occurred while trying to send the email login request: {e.Message}\n{e.StackTrace}");
+			Console.WriteLine($"An error occurred: {e.Message}");
 			return (false, Guid.Empty);
 		}
 	}
+
 
 
 	public async Task<(bool, Guid)> Register(RegisterRequest request)
