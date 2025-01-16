@@ -71,7 +71,7 @@ public class AuthService : IAuthService
 		}
 	}
 
-	public async Task<bool> Register(RegisterRequest request)
+	public async Task<(bool, Guid)> Register(RegisterRequest request)
 	{
 		string uri = BuildGatewayUri("/user/User");
 		HttpClient client = new HttpClient();
@@ -81,12 +81,14 @@ public class AuthService : IAuthService
 			var payload = requestUser;
 			var response = await client.PostAsJsonAsync(uri, payload);
 
-			return response.IsSuccessStatusCode;
+
+			Guid userId = Guid.Parse(response.ReasonPhrase);
+			return (true, userId);
 		}
 		catch (HttpRequestException e)
 		{
 			Console.WriteLine($"An error occurred while trying to send register request: {e.Message}.");
-			return false;
+			return (false, Guid.Empty);
 		}
 	}
 }

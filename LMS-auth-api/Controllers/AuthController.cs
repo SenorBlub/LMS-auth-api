@@ -39,7 +39,7 @@ namespace LMS_auth_api.Controllers
 				ExpiresAt = DateTime.UtcNow.AddDays(1)
 			});
 
-			return Ok(new AuthResponse { Token = token, RefreshToken = refreshToken });
+			return Ok(new AuthResponse { UserId = request.UserId, Token = token, RefreshToken = refreshToken });
 		}
 
 		[HttpPost("email-authorize")]
@@ -62,7 +62,7 @@ namespace LMS_auth_api.Controllers
 				ExpiresAt = DateTime.UtcNow.AddDays(1)
 			});
 
-			return Ok(new AuthResponse { Token = token, RefreshToken = refreshToken });
+			return Ok(new AuthResponse { UserId = response.Item2, Token = token, RefreshToken = refreshToken });
 		}
 
 		[HttpPost("refresh-token")]
@@ -106,7 +106,7 @@ namespace LMS_auth_api.Controllers
 				ExpiresAt = DateTime.UtcNow.AddDays(1)
 			});
 
-			return Ok(new AuthResponse { Token = token, RefreshToken = refreshToken });
+			return Ok(new AuthResponse { UserId = request.UserId, Token = token, RefreshToken = refreshToken });
 		}
 	}
 }
