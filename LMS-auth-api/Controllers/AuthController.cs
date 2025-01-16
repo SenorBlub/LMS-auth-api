@@ -46,6 +46,7 @@ namespace LMS_auth_api.Controllers
 		public async Task<IActionResult> EmailLogin([FromBody] EmailAuthRequest request)
 		{
 			var response = await _authService.Authorize(request);
+			Console.WriteLine(response);
 			if (!response.Item1)
 			{
 				return BadRequest("Login failed, incorrect credentials.");
