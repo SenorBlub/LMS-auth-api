@@ -59,10 +59,10 @@ public class AuthService : IAuthService
 			if (response.IsSuccessStatusCode)
 			{
 				// Deserialize the response content to extract the userId
-				var responseContent = await response.Content.ReadFromJsonAsync<AuthResponse>();
-				if (responseContent != null && responseContent.UserId != Guid.Empty)
+				var responseContent = await response.Content.ReadFromJsonAsync<Guid>();
+				if (responseContent != null && responseContent != Guid.Empty)
 				{
-					return (true, responseContent.UserId);
+					return (true, responseContent);
 				}
 			}
 
